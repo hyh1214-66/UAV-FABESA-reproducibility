@@ -1,90 +1,91 @@
 # =============================================================
-# UAV-FABESA 仿真平台配置文件
+# UAV-FABESA Simulation Platform Configuration File
 # config.yaml
 # =============================================================
-# 修改此文件切换场景，不需要改任何Python代码
-# 所有参数均有注释说明，单位在参数名中体现
+# Modify this file to switch scenarios; no Python code changes required
+# All parameters are documented with comments; units are reflected in parameter names
 # =============================================================
 
 # -------------------------------------------------------------
-# 仿真基础设置
+# Simulation Basic Settings
 # -------------------------------------------------------------
 simulation:
-  run_id: "scenario_default"        # 运行ID，影响输出目录名
-  total_ticks: 40                   # 仿真总步数
-  tick_duration_s: 1.0              # 每tick代表的真实时间（秒）
-  random_seed: 42                   # 全局随机种子（保证复现性）
-  warmup_ticks: 5                   # 预热tick数（不计入统计）
-  verbose: false                    # 是否打印详细日志
-  save_snapshot_interval: 10        # 每N tick保存拓扑快照（用于图5）
+  run_id: "scenario_default"        # Run ID; affects output directory name
+  total_ticks: 50                   # Total simulation steps
+  tick_duration_s: 1.0              # Real time per tick (seconds)
+  random_seed: 42                   # lobal random seed (for reproducibility)
+  warmup_ticks: 5                   # Warm-up ticks (excluded from statistics)
+  verbose: false                    # hether to print detailed logs
+  save_snapshot_interval: 10        # Save topology snapshot every N ticks (for Fig. 5)
 
 # -------------------------------------------------------------
-# UAV 集群设置
+# AV Swarm Settings
 # -------------------------------------------------------------
 swarm:
-  n_nodes: 30                       # UAV总数（不含GCS）
-  map_width_m: 600.0                # 仿真地图宽度（米）
-  map_height_m: 600.0               # 仿真地图高度（米）
+  n_nodes: 30                       # Total number of UAVs (excluding GCS)
+  map_width_m: 600.0                # mulation map width (meters)
+  map_height_m: 600.0               # 仿Simulation map height (meters)
 
-  # 角色比例（必须加起来约等于1.0）
+  # Role distribution (must sum to approximately 1.0)
   role_distribution:
-    COMMANDER: 0.10                 # 指挥机：10%
-    SCOUT:     0.50                 # 侦察机：50%
-    STRIKE:    0.30                 # 打击机：30%
-    CARRIER:   0.10                 # 运输机：10%
+    COMMANDER: 0.10                 # Commander: 10%
+    SCOUT:     0.50                 # Scout: 50%
+    STRIKE:    0.30                 # Strike: 30%
+    CARRIER:   0.10                 # Carrier: 10%
 
-  # 初始电量范围（百分比）
+  # nitial battery range (percentage)
   battery_init_min: 60.0
   battery_init_max: 100.0
 
 # -------------------------------------------------------------
-# GCS（地面控制站）设置
+# CS (Ground Control Station) Settings
 # -------------------------------------------------------------
 gcs:
   gcs_id: "GCS"
-  position_x_m: 0.0                 # GCS固定坐标X
-  position_y_m: 0.0                 # GCS固定坐标Y
-  timeout_ticks: 5                  # UAV超时失联判定tick数
-  schedule_interval: 5              # 任务调度间隔（每N tick）
+  position_x_m: 0.0                 # GCS fixed coordinate X
+  position_y_m: 0.0                 # GCS fixed coordinate Y
+  timeout_ticks: 5                  # Ticks to determine UAV timeout/loss of contact
+  schedule_interval: 5              # ask scheduling interval (every N ticks)
 
 # -------------------------------------------------------------
-# 移动模型设置
+# Mobility Model Settings
 # -------------------------------------------------------------
 mobility:
-  max_speed_mps: 15.0               # 最大飞行速度（m/s）
-  min_speed_mps: 5.0                # 最小飞行速度（m/s）
-  turn_rate_rad: 0.3                # 最大转向速率（rad/tick）
-  heading_noise: 0.1                # 随机游走航向扰动（rad）
+  max_speed_mps: 15.0               # Maximum flight speed (m/s)
+  min_speed_mps: 5.0                # Minimum flight speed (m/s)
+  turn_rate_rad: 0.3                # aximum turn rate (rad/tick)
+  heading_noise: 0.1                #  Random walk heading perturbation (rad)
 
 # -------------------------------------------------------------
-# 无线信道设置
+# Wireless Channel Settings
 # -------------------------------------------------------------
 channel:
-  tx_power_dbm: 20.0                # 发射功率（dBm）
-  frequency_ghz: 2.4                # 载波频率（GHz）
-  path_loss_exponent: 2.2           # 路径损耗指数（自由空间=2）
-  ref_distance_m: 1.0               # 参考距离（米）
-  noise_power_dbm: -90.0            # 噪声功率（dBm）
-  shadowing_std_db: 2.0             # 阴影衰落标准差（dB，0=关闭）
-  max_range_m: 400.0                # 最大通信距离（米）
-  min_rssi_dbm: -85.0               # 最低接收灵敏度（dBm）
-  max_plr: 0.8                      # 最大可用丢包率阈值
-  processing_delay_ms: 1.0          # 处理时延（ms）
+  tx_power_dbm: 20.0                # Transmit power (dBm)
+  frequency_ghz: 2.4                # Carrier frequency (GHz)
+  path_loss_exponent: 2.2           # Path loss exponent (free space = 2)
+  ref_distance_m: 1.0               # Reference distance (meters)
+  noise_power_dbm: -90.0            # Noise power (dBm)
+  shadowing_std_db: 2.0             # Shadowing standard deviation (dB; 0 = off)
+  max_range_m: 400.0                #  Maximum communication range (meters)
+  min_rssi_dbm: -85.0               # Minimum receiver sensitivity (dBm)
+  max_plr: 0.8                      # aximum acceptable packet loss rate threshold
+  processing_delay_ms: 1.0          #  Processing delay (ms)
+
 
 # -------------------------------------------------------------
-# 拓扑设置
+# Topology Settings
 # -------------------------------------------------------------
 topology:
   type: "Mesh"                      # Star / Cluster / Mesh
-  update_every_tick: true           # 是否每tick重算拓扑
+  update_every_tick: true           # Whether to recompute topology every tick
 
 # -------------------------------------------------------------
-# 任务流设置
+# Traffic Flow Settings
 # -------------------------------------------------------------
 traffic:
-  msgs_per_tick: 3                  # 每tick每节点平均发消息数
-  # 各消息类型比例（必须加起来约等于1.0）
-  msg_type_distribution:
+  msgs_per_tick: 3                  # Average number of messages sent per node per tick
+  
+  msg_type_distribution:            # Message type distribution (must sum to approximately 1.0)
     RECON:  0.30
     CMD:    0.20
     SYNC:   0.20
@@ -92,22 +93,22 @@ traffic:
     STATUS: 0.15
 
 # -------------------------------------------------------------
-# ABE 设置
+# ABE Settings
 # -------------------------------------------------------------
 abe:
   scheme: "CP"                      # CP / KP
-  enable_opt1_hash_cache: true      # OPT-1：哈希缓存
-  enable_opt2_precompute: true      # OPT-2：公钥预计算
-  enable_opt3_gt_grouping: true     # OPT-3：GT分组运算
-  enable_policy_optimizer: true     # OPT-4：策略复杂度优化
-  n_encrypt_per_msg: 1              # 每条消息加密次数
+  enable_opt1_hash_cache: true      # OPT-1：Hash cache
+  enable_opt2_precompute: true      # OPT-2：ublic key precomputation
+  enable_opt3_gt_grouping: true     # OPT-3：GT group operations
+  enable_policy_optimizer: true     # OPT-4：Policy complexity optimization
+  n_encrypt_per_msg: 1              # Number of encryptions per message
 
 # -------------------------------------------------------------
-# 输出设置
+# Output Settings
 # -------------------------------------------------------------
 output:
-  results_dir: "UAV_Results"        # 数据输出根目录
-  figures_dir: "UAV_Figures"        # 图表输出根目录
-  logger_flush_interval: 50        # 日志flush间隔（tick）
-  export_node_snapshots: true       # 是否导出节点快照（数据量大）
-  export_link_records: true         # 是否导出链路记录
+  results_dir: "UAV_Results"        # Data output root directory
+  figures_dir: "UAV_Figures"        # Figures output root directory
+  logger_flush_interval: 50        # Log flush interval (ticks)
+  export_node_snapshots: true       # Whether to export node snapshots (large data volume)
+  export_link_records: true         # Whether to export link records
