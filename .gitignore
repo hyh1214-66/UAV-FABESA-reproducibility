@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# Experiment scripts and data (not part of the public base release)
+UAV_FABESA/
+simulation/
+cross_scheme/
+
+# Data / outputs
+*.csv
+*.pdf
+
+# OS
+.DS_Store
+Thumbs.db
+*Zone.Identifier
