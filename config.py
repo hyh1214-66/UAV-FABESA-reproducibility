@@ -1,17 +1,17 @@
 """
-config.py - 配置文件加载器
+config.py - Configuration file loader
 ============================
-负责：
-  - 读取 config.yaml，转换为强类型 Python 对象
-  - 提供默认值（yaml缺字段时不崩溃）
-  - 校验参数合法性（比例之和、范围约束）
-  - 支持命令行参数覆盖（--n_nodes=50 等）
-  - 提供场景预设快捷方式（scenario1/2/3直接加载）
-  - 打印完整配置信息（复现信息模板）
+Responsibilities:
+  - Read config.yaml and convert it into strongly typed Python objects
+  - Provide default values (do not crash when fields are missing in yaml)
+  - Validate parameter legality (sum of proportions, range constraints)
+  - Support command-line parameter overrides (--n_nodes=50, etc.)
+  - Provide scenario preset shortcuts (load scenario1/2/3 directly)
+  - Print complete configuration information (reproduction information template)
 
-设计原则：
-  - 所有模块从 SimConfig 对象取参数，不直接读yaml
-  - 零外部依赖：yaml用标准库fallback
+Design principles:
+  - All modules obtain parameters from the SimConfig object and do not read yaml directly
+  - Zero external dependencies: yaml uses standard library fallback
 """
 
 import os
@@ -20,7 +20,7 @@ import argparse
 from dataclasses import dataclass, field, asdict
 from typing import Dict, Optional, Any
 
-# yaml：优先使用PyYAML，fallback到手写解析
+# yaml: Prefer PyYAML, fallback to handwritten parsing
 try:
     import yaml
     HAS_YAML = True
@@ -29,7 +29,7 @@ except ImportError:
 
 
 # ─────────────────────────────────────────
-# 强类型配置数据类
+# Strongly typed configuration data classes
 # ─────────────────────────────────────────
 @dataclass
 class SimulationConfig:
@@ -127,8 +127,8 @@ class OutputConfig:
 @dataclass
 class SimConfig:
     """
-    完整仿真配置对象。
-    所有模块通过此对象获取参数。
+    Complete simulation configuration object.
+    All modules obtain parameters through this object.
     """
     simulation: SimulationConfig = field(
         default_factory=SimulationConfig)
@@ -149,7 +149,7 @@ class SimConfig:
     output:     OutputConfig     = field(
         default_factory=OutputConfig)
 
-    # ── 便捷属性 ──────────────────────────
+    # ── Convenience properties ──────────────────────────
     @property
     def run_id(self) -> str:
         return self.simulation.run_id
@@ -172,30 +172,30 @@ class SimConfig:
 
     @property
     def output_dir(self) -> str:
-        """本次运行的完整输出目录"""
+        """Complete output directory for this run"""
         return os.path.join(
             self.output.results_dir,
             self.simulation.run_id)
 
 
 # ─────────────────────────────────────────
-# YAML 加载器
+# YAML loader
 # ─────────────────────────────────────────
 def _load_yaml(path: str) -> Dict:
-    """加载YAML文件，返回字典"""
+    """Load a YAML file and return a dictionary"""
     if not os.path.exists(path):
-        raise FileNotFoundError(f"配置文件不存在: {path}")
+        raise FileNotFoundError(f"Configuration file does not exist: {path}")
 
     if HAS_YAML:
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
     else:
-        # 简易fallback：只支持 key: value 格式
+        # Simple fallback: only supports key: value format
         return _simple_yaml_parse(path)
 
 
 def _simple_yaml_parse(path: str) -> Dict:
-    """极简YAML解析（无PyYAML时的fallback）"""
+    """Minimal YAML parsing (fallback when PyYAML is unavailable)"""
     result = {}
     current_section = None
     with open(path, "r", encoding="utf-8") as f:
@@ -222,8 +222,8 @@ def _simple_yaml_parse(path: str) -> Dict:
 
 
 def _parse_val(v: str) -> Any:
-    """简单类型转换（先截断行内注释）"""
-    # 截断行内注释：取 # 之前的部分，但保留字符串值中的 #
+    """Simple type conversion (strip inline comments first)"""
+    # Strip inline comments: take the part before #, but preserve # in string values
     if "#" in v:
         v = v.split("#")[0].strip()
     v = v.strip()
@@ -240,7 +240,7 @@ def _parse_val(v: str) -> Any:
 
 
 def _get(d: Dict, *keys, default=None) -> Any:
-    """安全嵌套取值"""
+    """Safely get nested values"""
     for k in keys:
         if not isinstance(d, dict):
             return default
@@ -249,20 +249,20 @@ def _get(d: Dict, *keys, default=None) -> Any:
 
 
 # ─────────────────────────────────────────
-# 主加载函数
+# Main loading function
 # ─────────────────────────────────────────
 def load_config(yaml_path: str = "config.yaml",
                 overrides: Optional[Dict] = None) -> SimConfig:
     """
-    从YAML文件加载完整配置。
+    Load the complete configuration from a YAML file.
 
     Args:
-        yaml_path: YAML配置文件路径
-        overrides: 命令行或代码中的覆盖参数字典
-                   格式：{"simulation.n_nodes": 50, ...}
+        yaml_path: Path to the YAML configuration file
+        overrides: Dictionary of override parameters from command line or code
+                   Format: {"simulation.n_nodes": 50, ...}
 
     Returns:
-        SimConfig 对象
+        SimConfig object
 
     Example:
         cfg = load_config("config.yaml",
@@ -271,7 +271,7 @@ def load_config(yaml_path: str = "config.yaml",
     """
     raw = _load_yaml(yaml_path)
 
-    # 应用覆盖
+    # Apply overrides
     if overrides:
         for dot_key, val in overrides.items():
             parts = dot_key.split(".")
@@ -396,40 +396,40 @@ def load_config(yaml_path: str = "config.yaml",
             o, "export_link_records", default=True)),
     )
 
-    # 校验
+    # Validation
     _validate(cfg)
     return cfg
 
 
 def _validate(cfg: SimConfig) -> None:
-    """参数合法性校验，不合法则抛出 ValueError"""
+    """Validate parameter legality; raise ValueError if invalid"""
     errors = []
 
     if cfg.swarm.n_nodes < 1:
-        errors.append("swarm.n_nodes 必须 >= 1")
+        errors.append("swarm.n_nodes must be >= 1")
     if cfg.simulation.total_ticks < 1:
-        errors.append("simulation.total_ticks 必须 >= 1")
+        errors.append("simulation.total_ticks must be >= 1")
     if cfg.channel.max_range_m <= 0:
-        errors.append("channel.max_range_m 必须 > 0")
+        errors.append("channel.max_range_m must be > 0")
     if cfg.topology.type not in ("Star", "Cluster", "Mesh"):
         errors.append(
-            f"topology.type 必须为 Star/Cluster/Mesh，"
-            f"当前值: {cfg.topology.type}")
+            f"topology.type must be Star/Cluster/Mesh, "
+            f"current value: {cfg.topology.type}")
 
     rd = cfg.swarm.role_distribution or {}
     role_sum = sum(rd.values()) if rd else 0.0
     if not (0.8 <= role_sum <= 1.2):
         errors.append(
-            f"role_distribution 比例之和应约为1.0，"
-            f"当前值: {role_sum:.2f}")
+            f"The sum of role_distribution proportions should be approximately 1.0, "
+            f"current value: {role_sum:.2f}")
 
     if errors:
-        raise ValueError("配置校验失败:\n" +
+        raise ValueError("Configuration validation failed:\n" +
                          "\n".join(f"  - {e}" for e in errors))
 
 
 # ─────────────────────────────────────────
-# 场景预设
+# Scenario presets
 # ─────────────────────────────────────────
 SCENARIO_PRESETS = {
     "scenario1": {
@@ -478,15 +478,15 @@ def load_preset(preset_name: str,
                 yaml_path: str = "config.yaml",
                 extra_overrides: Optional[Dict] = None) -> SimConfig:
     """
-    加载场景预设配置。
+    Load a scenario preset configuration.
 
     Args:
-        preset_name:     预设名称（scenario1/2/3/exp5_star等）
-        yaml_path:       基础yaml路径
-        extra_overrides: 额外覆盖参数
+        preset_name:     Preset name (scenario1/2/3/exp5_star, etc.)
+        yaml_path:       Base yaml path
+        extra_overrides: Additional override parameters
 
     Returns:
-        SimConfig 对象
+        SimConfig object
 
     Example:
         cfg = load_preset("scenario2")
@@ -495,8 +495,8 @@ def load_preset(preset_name: str,
     """
     if preset_name not in SCENARIO_PRESETS:
         raise ValueError(
-            f"未知预设: {preset_name}，"
-            f"可用预设: {list(SCENARIO_PRESETS.keys())}")
+            f"Unknown preset: {preset_name}, "
+            f"available presets: {list(SCENARIO_PRESETS.keys())}")
 
     overrides = dict(SCENARIO_PRESETS[preset_name])
     if extra_overrides:
@@ -507,87 +507,87 @@ def load_preset(preset_name: str,
 
 def load_default() -> SimConfig:
     """
-    加载纯默认配置（无需yaml文件）。
-    单元测试或快速验证时使用。
+    Load pure default configuration (no yaml file required).
+    Used for unit tests or quick verification.
     """
     cfg = SimConfig()
     return cfg
 
 
 # ─────────────────────────────────────────
-# 配置打印（复现信息模板）
+# Configuration printing (reproduction information template)
 # ─────────────────────────────────────────
 def print_config(cfg: SimConfig) -> None:
     """
-    打印完整配置信息。
-    输出格式可直接复制进论文"实验设置"章节。
+    Print complete configuration information.
+    The output format can be directly copied into the "Experimental Setup" section of a paper.
     """
     print("=" * 60)
-    print("  UAV-FABESA 仿真配置（论文复现信息）")
+    print("  UAV-FABESA Simulation Configuration (Paper Reproduction Info)")
     print("=" * 60)
-    print(f"\n[仿真设置]")
+    print(f"\n[Simulation Settings]")
     print(f"  Run ID:            {cfg.simulation.run_id}")
-    print(f"  总tick数:          {cfg.simulation.total_ticks}")
-    print(f"  每tick时长:        {cfg.simulation.tick_duration_s}s")
-    print(f"  预热tick:          {cfg.simulation.warmup_ticks}")
-    print(f"  随机种子:          {cfg.simulation.random_seed}")
+    print(f"  Total ticks:       {cfg.simulation.total_ticks}")
+    print(f"  Tick duration:     {cfg.simulation.tick_duration_s}s")
+    print(f"  Warm-up ticks:     {cfg.simulation.warmup_ticks}")
+    print(f"  Random seed:       {cfg.simulation.random_seed}")
 
-    print(f"\n[集群设置]")
-    print(f"  UAV总数:           {cfg.swarm.n_nodes}")
-    print(f"  地图尺寸:          "
+    print(f"\n[Swarm Settings]")
+    print(f"  Total UAVs:        {cfg.swarm.n_nodes}")
+    print(f"  Map size:          "
           f"{cfg.swarm.map_width_m}m × {cfg.swarm.map_height_m}m")
-    print(f"  角色分布:          "
+    print(f"  Role distribution: "
           f"{cfg.swarm.role_distribution}")
-    print(f"  初始电量范围:      "
+    print(f"  Initial battery range: "
           f"{cfg.swarm.battery_init_min}%–{cfg.swarm.battery_init_max}%")
 
-    print(f"\n[网络设置]")
-    print(f"  拓扑类型:          {cfg.topology.type}")
-    print(f"  最大通信距离:      {cfg.channel.max_range_m}m")
-    print(f"  载波频率:          {cfg.channel.frequency_ghz}GHz")
-    print(f"  发射功率:          {cfg.channel.tx_power_dbm}dBm")
-    print(f"  路径损耗指数:      {cfg.channel.path_loss_exponent}")
-    print(f"  阴影衰落标准差:    {cfg.channel.shadowing_std_db}dB")
-    print(f"  处理时延:          {cfg.channel.processing_delay_ms}ms")
+    print(f"\n[Network Settings]")
+    print(f"  Topology type:     {cfg.topology.type}")
+    print(f"  Max communication range: {cfg.channel.max_range_m}m")
+    print(f"  Carrier frequency: {cfg.channel.frequency_ghz}GHz")
+    print(f"  Transmit power:    {cfg.channel.tx_power_dbm}dBm")
+    print(f"  Path loss exponent: {cfg.channel.path_loss_exponent}")
+    print(f"  Shadowing std dev: {cfg.channel.shadowing_std_db}dB")
+    print(f"  Processing delay:  {cfg.channel.processing_delay_ms}ms")
 
-    print(f"\n[移动模型]")
-    print(f"  速度范围:          "
+    print(f"\n[Mobility Model]")
+    print(f"  Speed range:       "
           f"{cfg.mobility.min_speed_mps}–"
           f"{cfg.mobility.max_speed_mps} m/s")
-    print(f"  最大转向速率:      {cfg.mobility.turn_rate_rad} rad/tick")
+    print(f"  Max turn rate:     {cfg.mobility.turn_rate_rad} rad/tick")
 
-    print(f"\n[ABE设置]")
-    print(f"  方案:              {cfg.abe.scheme}-ABE")
-    print(f"  OPT-1 哈希缓存:   "
-          f"{'开启' if cfg.abe.enable_opt1_hash_cache else '关闭'}")
-    print(f"  OPT-2 预计算:     "
-          f"{'开启' if cfg.abe.enable_opt2_precompute else '关闭'}")
-    print(f"  OPT-3 GT分组:     "
-          f"{'开启' if cfg.abe.enable_opt3_gt_grouping else '关闭'}")
-    print(f"  OPT-4 策略优化:   "
-          f"{'开启' if cfg.abe.enable_policy_optimizer else '关闭'}")
+    print(f"\n[ABE Settings]")
+    print(f"  Scheme:            {cfg.abe.scheme}-ABE")
+    print(f"  OPT-1 Hash cache:  "
+          f"{'enabled' if cfg.abe.enable_opt1_hash_cache else 'disabled'}")
+    print(f"  OPT-2 Precompute:  "
+          f"{'enabled' if cfg.abe.enable_opt2_precompute else 'disabled'}")
+    print(f"  OPT-3 GT grouping: "
+          f"{'enabled' if cfg.abe.enable_opt3_gt_grouping else 'disabled'}")
+    print(f"  OPT-4 Policy opt.: "
+          f"{'enabled' if cfg.abe.enable_policy_optimizer else 'disabled'}")
 
-    print(f"\n[消息流]")
-    print(f"  每tick每节点消息数: {cfg.traffic.msgs_per_tick}")
-    print(f"  消息类型分布:      "
+    print(f"\n[Traffic Flow]")
+    print(f"  Messages per node per tick: {cfg.traffic.msgs_per_tick}")
+    print(f"  Message type distribution: "
           f"{cfg.traffic.msg_type_distribution}")
 
-    print(f"\n[输出]")
-    print(f"  数据目录:          {cfg.output_dir}")
-    print(f"  图表目录:          {cfg.output.figures_dir}")
+    print(f"\n[Output]")
+    print(f"  Data directory:    {cfg.output_dir}")
+    print(f"  Figures directory: {cfg.output.figures_dir}")
     print("=" * 60)
 
 
 # ─────────────────────────────────────────
-# 命令行接口（直接运行时）
+# Command-line interface (when run directly)
 # ─────────────────────────────────────────
 def parse_cli_overrides() -> Dict:
     """
-    解析命令行覆盖参数。
-    格式：python runner.py --n_nodes=50 --topology=Star
+    Parse command-line override parameters.
+    Format: python runner.py --n_nodes=50 --topology=Star
 
     Returns:
-        overrides字典
+        overrides dictionary
     """
     overrides = {}
     cli_map = {
@@ -595,7 +595,7 @@ def parse_cli_overrides() -> Dict:
         "--ticks":      "simulation.total_ticks",
         "--topology":   "topology.type",
         "--seed":       "simulation.random_seed",
-        "--scenario":   None,   # 特殊处理
+        "--scenario":   None,   # Special handling
     }
     for arg in sys.argv[1:]:
         if "=" in arg:
@@ -606,17 +606,17 @@ def parse_cli_overrides() -> Dict:
 
 
 # ─────────────────────────────────────────
-# 单元测试
+# Unit tests
 # ─────────────────────────────────────────
 if __name__ == "__main__":
     import tempfile
 
     print("=" * 55)
-    print("  SimConfig 单元测试")
+    print("  SimConfig Unit Tests")
     print("=" * 55)
 
-    # ── 测试1：默认配置 ──────────────────────
-    print("\n[测试1] 默认配置加载")
+    # ── Test 1: Default configuration ──────────────────────
+    print("\n[Test 1] Default configuration loading")
     cfg = load_default()
     print(f"  n_nodes: {cfg.n_nodes}")
     print(f"  total_ticks: {cfg.total_ticks}")
@@ -624,8 +624,8 @@ if __name__ == "__main__":
     print(f"  random_seed: {cfg.random_seed}")
     print(f"  output_dir: {cfg.output_dir}")
 
-    # ── 测试2：从YAML文件加载 ─────────────────
-    print("\n[测试2] 从YAML文件加载")
+    # ── Test 2: Load from YAML file ─────────────────
+    print("\n[Test 2] Loading from YAML file")
     yaml_path = os.path.join(
         os.path.dirname(__file__), "config.yaml")
     if os.path.exists(yaml_path):
@@ -636,10 +636,10 @@ if __name__ == "__main__":
         print(f"  max_range_m: {cfg2.channel.max_range_m}")
         print(f"  OPT-1: {cfg2.abe.enable_opt1_hash_cache}")
     else:
-        print(f"  [跳过] config.yaml不在 {yaml_path}")
+        print(f"  [Skipped] config.yaml not found at {yaml_path}")
 
-    # ── 测试3：覆盖参数 ──────────────────────
-    print("\n[测试3] 覆盖参数")
+    # ── Test 3: Override parameters ──────────────────────
+    print("\n[Test 3] Override parameters")
     overrides = {
         "swarm.n_nodes": 50,
         "topology.type": "Star",
@@ -657,8 +657,8 @@ if __name__ == "__main__":
         status = "✓" if str(cfg3_val) == str(v) else "✗"
         print(f"  {k}={v} → {cfg3_val} {status}")
 
-    # ── 测试4：场景预设 ──────────────────────
-    print("\n[测试4] 场景预设加载")
+    # ── Test 4: Scenario presets ──────────────────────
+    print("\n[Test 4] Scenario preset loading")
     for preset in ["scenario1", "scenario2", "scenario3"]:
         p = load_preset(preset, yaml_path) \
             if os.path.exists(yaml_path) \
@@ -671,26 +671,26 @@ if __name__ == "__main__":
               f"topo={p.topology_type}, "
               f"id={p.run_id}")
 
-    # ── 测试5：校验失败 ──────────────────────
-    print("\n[测试5] 参数校验（应抛出异常）")
+    # ── Test 5: Validation failure ──────────────────────
+    print("\n[Test 5] Parameter validation (should raise exception)")
     try:
         bad = load_default()
         bad.swarm.n_nodes = 0
         _validate(bad)
-        print("  ✗ 未抛出异常（bug）")
+        print("  ✗ No exception raised (bug)")
     except ValueError as e:
-        print(f"  ✓ 正确捕获: {e}")
+        print(f"  ✓ Correctly caught: {e}")
 
     try:
         bad2 = load_default()
         bad2.topology.type = "Ring"
         _validate(bad2)
-        print("  ✗ 未抛出异常（bug）")
+        print("  ✗ No exception raised (bug)")
     except ValueError as e:
-        print(f"  ✓ 正确捕获: {e}")
+        print(f"  ✓ Correctly caught: {e}")
 
-    # ── 测试6：与其他模块对接 ─────────────────
-    print("\n[测试6] 配置对接各模块")
+    # ── Test 6: Integration with other modules ─────────────────
+    print("\n[Test 6] Configuration integration with modules")
     cfg6 = load_default()
 
     # channel.py
@@ -708,11 +708,11 @@ if __name__ == "__main__":
         )
         ch = WirelessChannel(ch_cfg)
         state = ch.evaluate("A",(0,0),"B",(200,0))
-        print(f"  channel对接 ✓ "
+        print(f"  channel integration ✓ "
               f"d=200m RSSI={state.rssi_dbm:.1f}dBm "
               f"connected={state.is_connected}")
     except ImportError:
-        print("  channel.py不在同目录，跳过")
+        print("  channel.py not in the same directory, skipping")
 
     # node.py
     try:
@@ -733,13 +733,13 @@ if __name__ == "__main__":
             map_height=cfg6.swarm.map_height_m,
             random_seed=cfg6.random_seed,
         )
-        print(f"  node对接 ✓ "
-              f"创建{len(swarm)}架UAV")
+        print(f"  node integration ✓ "
+              f"created {len(swarm)} UAVs")
     except ImportError:
-        print("  node.py不在同目录，跳过")
+        print("  node.py not in the same directory, skipping")
 
-    # ── 测试7：打印复现信息模板 ───────────────
-    print("\n[测试7] 复现信息模板")
+    # ── Test 7: Print reproduction information template ───────────────
+    print("\n[Test 7] Reproduction information template")
     print_config(cfg6)
 
-    print("\n✅ 所有测试完成")
+    print("\n✅ All tests completed")
