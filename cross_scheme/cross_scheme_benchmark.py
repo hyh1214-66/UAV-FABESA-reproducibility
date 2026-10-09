@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+""" 
 cross_scheme_benchmark.py
 =========================
 Cross-scheme performance benchmark for CP-ABE on BN254.
