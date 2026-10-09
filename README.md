@@ -26,23 +26,13 @@ cross_scheme/   Cross-scheme benchmark and a partial data release
 ```
 
 ## Availability of Code and Data
-This repository is under continuous maintenance and improvement. At present it
-makes publicly available (i) the base cryptographic implementation, (ii) the
-cross-scheme benchmark script, and (iii) a representative subset of the
-benchmark records: 900 of the 3,000 runs, corresponding to cold-start mode at
-policy sizes 5, 20, and 50 for all six schemes.
+This repository provides the core cryptographic implementation of the UAV-FABESA framework and is under continuous maintenance and development. At present, it makes publicly available the following: (i) the base cryptographic implementation; (ii) the cross-scheme benchmark scripts; and (iii) a representative subset of the benchmark records.
 
-The complete set of 3,000 cross-scheme benchmark execution records, the raw
-simulation outputs, and the processed experimental data are not included in
-this repository. Because these materials are subject to the research group's
-data-management requirements and to ongoing follow-up studies, they are not
-released here as a complete public dataset. They are available from the
-corresponding author upon reasonable request.
+Because some of the code is subject to the research group's data-management requirements and ongoing follow-up studies, it is not fully released here. These materials are available from the corresponding author upon reasonable request.
 
-To support transparency, the manuscript details the experimental configuration,
-testing procedure, data-processing method, and statistical analysis. Any
-additional materials that can be made public will be added to this repository
-incrementally as the project progresses.
+To support research transparency, the associated paper provides a detailed description of the experimental configuration, evaluation procedure, data-processing method, and statistical analysis. If you have questions about specific results reported in the paper, please contact the corresponding author for methodological explanation and technical clarification.
+
+Supplementary materials that can be made public are being added to this repository.
 
 ## Notes
 All implementations use the BN254 pairing curve with fixed random seeds. Each
