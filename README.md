@@ -20,16 +20,15 @@ policytree.py   Policy string parser
 secretutil.py   Secret-sharing utilities
 config.py       Configuration loader
 config.yaml     Default configuration
-cross_scheme/   Cross-scheme benchmark scripts and a partial data release
+cross_scheme/   Cross-scheme benchmark and a partial data release
                 cross_scheme_benchmark.py    Benchmark driver
-                cross_scheme_figure.py       Figure-generation script
                 cross_scheme_raw_subset.csv  900 of the 3,000 execution records
 ```
 
 ## Availability of Code and Data
 This repository is under continuous maintenance and improvement. At present it
 makes publicly available (i) the base cryptographic implementation, (ii) the
-cross-scheme benchmark scripts, and (iii) a representative subset of the
+cross-scheme benchmark script, and (iii) a representative subset of the
 benchmark records: 900 of the 3,000 runs, corresponding to cold-start mode at
 policy sizes 5, 20, and 50 for all six schemes.
 
