@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#/usr/bin/python
 
 from pyparsing import *
 from charm.toolbox.node import *
