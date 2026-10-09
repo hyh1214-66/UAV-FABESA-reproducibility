@@ -2,13 +2,13 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Experiment scripts and data (not part of the public base release)
+# Not part of the public release
 UAV_FABESA/
 simulation/
-cross_scheme/
+cross_scheme/cross_scheme_raw.csv
+cross_scheme/cross_scheme_summary.csv
 
-# Data / outputs
-*.csv
+# Generated outputs
 *.pdf
 
 # OS
